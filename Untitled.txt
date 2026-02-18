@@ -1,0 +1,85 @@
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any, Dict
+
+import os
+from openai import OpenAI
+from fastapi import FastAPI, WebSocket, HTTPException
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+
+# ---------------- Paths ----------------
+BASE_DIR = Path(__file__).resolve().parent
+WEB_DIR = (BASE_DIR.parent / "web").resolve()
+
+# ---------------- App ----------------
+app = FastAPI(title="DuckBot Backend")
+
+# ---------------- OpenAI Client ----------------
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+# ---------------- Models ----------------
+class AskRequest(BaseModel):
+    question: str
+
+# ---------------- API ----------------
+@app.post("/api/ai/ask")
+def ai_ask(req: AskRequest) -> Dict[str, Any]:
+    if not os.environ.get("OPENAI_API_KEY"):
+        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not set on the server")
+
+    q = req.question.strip()
+    if not q:
+        return {"answer": "Ask me something 👀"}
+
+    try:
+        resp = client.responses.create(
+            model="gpt-4.1-mini",
+            input=q,
+        )
+        # Official python lib exposes the assistant text as output_text
+        answer = resp.output_text.strip() if getattr(resp, "output_text", None) else ""
+        if not answer:
+            answer = "Quack… I didn’t get a response text."
+        return {"answer": answer}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"OpenAI error: {e}")
+
+# Frontend posts audio/webm chunks here for Talk Mode.
+@app.post("/api/talk/chunk")
+async def talk_chunk() -> Dict[str, Any]:
+    # We'll implement audio playback later; this just prevents 404 errors.
+    return {"ok": True}
+
+# ---------------- WebSocket for Controller ----------------
+@app.websocket("/ws/control")
+async def ws_control(ws: WebSocket):
+    await ws.accept()
+    try:
+        while True:
+            msg = await ws.receive_text()
+            # Later you’ll parse messages like:
+            # {"type":"drive_value","value":0.4}
+            # {"type":"steer_value","value":-0.8}
+            # {"type":"quack"}
+            # For now we just keep the socket alive.
+            # print("WS:", msg)
+    except Exception:
+        pass
+
+# ---------------- Serve Web App ----------------
+@app.get("/")
+def home():
+    index = WEB_DIR / "index.html"
+    if not index.exists():
+        return JSONResponse(
+            {"error": f"Missing {index}. Put index.html, app.js, styles.css in {WEB_DIR}"},
+            status_code=500,
+        )
+    return FileResponse(index)
+
+# Mount static LAST so /api and /ws routes still work
+if WEB_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(WEB_DIR), html=True), name="web")

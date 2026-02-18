@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>DuckBot</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">🦆</div>
+      <div>
+        <div class="title">DuckBot</div>
+        <div class="sub" id="statusText">Tap Connect to link to DuckBot</div>
+      </div>
+    </div>
+    <button class="pill" id="connectBtn">Connect</button>
+  </header>
+
+  <main class="main">
+    <!-- ===== Controller Screen ===== -->
+    <section class="screen active" id="screen-controller" aria-label="Controller screen">
+      <div class="card">
+        <div class="cardTitle">Controller</div>
+
+        <div class="controllerPad">
+          <!-- Left joystick: forward/back -->
+          <div class="stickWrap">
+            <div class="stickLabel">Drive</div>
+            <div class="stick" id="stickDrive" aria-label="Drive joystick">
+              <div class="stickKnob" id="knobDrive"></div>
+            </div>
+            <div class="stickHint">Up / Down</div>
+          </div>
+
+          <!-- Duck button -->
+          <button class="duckBtn" id="duckBtn" aria-label="Quack button">
+            🦆
+            <div class="duckSub">QUACK</div>
+          </button>
+
+          <!-- Right joystick: left/right -->
+          <div class="stickWrap">
+            <div class="stickLabel">Steer</div>
+            <div class="stick" id="stickSteer" aria-label="Steering joystick">
+              <div class="stickKnob" id="knobSteer"></div>
+            </div>
+            <div class="stickHint">Left / Right</div>
+          </div>
+        </div>
+
+        <div class="sliderRow">
+          <label for="speed">Speed</label>
+          <input id="speed" type="range" min="0" max="100" value="65" />
+          <span class="mono" id="speedVal">65%</span>
+        </div>
+
+        <div class="row gap wrap" style="margin-top:12px;">
+          <button class="btn stopWide" id="btnStop">STOP</button>
+          <button class="pill" id="btnLights">Lights</button>
+        </div>
+
+        <div class="hint">
+          Left stick drives forward/back. Right stick steers left/right. Let go to stop and your wheels auto-center.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">Captions</div>
+        <div class="captionBox">
+          <div class="captionLabel">Duck says:</div>
+          <div class="captionText" id="captionText">—</div>
+        </div>
+        <div class="row gap wrap" style="margin-top:10px;">
+          <button class="pill" id="toggleBigText">Big Text</button>
+          <button class="pill" id="toggleContrast">High Contrast</button>
+          <button class="pill" id="clearCaptions">Clear</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Ask Duck Screen ===== -->
+    <section class="screen" id="screen-ask" aria-label="Ask Duck screen">
+      <div class="card">
+        <div class="cardTitle">Ask Duck (AI)</div>
+
+        <div class="chat" id="chat"></div>
+
+        <div class="composer">
+          <button class="iconBtn" id="askMicBtn" title="Speak a question">🎤</button>
+          <input id="askInput" type="text" placeholder="Ask a question…" autocomplete="off" />
+          <button class="pill" id="askSendBtn">Send</button>
+        </div>
+
+        <div class="hint">
+          This will send your question to the duck server (Pi). The duck returns text for captions + speaks it out loud.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">Captions</div>
+        <div class="captionBox">
+          <div class="captionLabel">Duck says:</div>
+          <div class="captionText" id="captionTextAsk">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Talk Mode Screen ===== -->
+    <section class="screen" id="screen-talk" aria-label="Talk Mode screen">
+      <div class="card">
+        <div class="cardTitle">Talk Mode (Walkie-Talkie)</div>
+
+        <div class="row gap wrap">
+          <button class="btn talkWide" id="talkHoldBtn">Hold to Talk 🎙️</button>
+          <div class="talkState mono" id="talkState">Idle</div>
+        </div>
+
+        <div class="row gap wrap" style="margin-top:12px;">
+          <button class="pill" id="talkQuack">Quack</button>
+          <button class="btn stopWide" id="talkStop">STOP</button>
+        </div>
+
+        <div class="hint">
+          Hold to stream your mic audio to the duck speaker. You can still drive using Controller mode.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">Captions</div>
+        <div class="captionBox">
+          <div class="captionLabel">Duck says:</div>
+          <div class="captionText" id="captionTextTalk">—</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabs">
+    <button class="tab active" data-screen="controller">🎮<span>Controller</span></button>
+    <button class="tab" data-screen="ask">🧠<span>Ask</span></button>
+    <button class="tab" data-screen="talk">🎤<span>Talk</span></button>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>
